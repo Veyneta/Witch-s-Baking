@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transfer Ratings - Import/Export</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        .info-box {
+            background: #e0f2fe;
+            border-left: 4px solid #0ea5e9;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        .error {
+            border-left-color: #ef4444;
+            background: #fee;
+        }
+        .success {
+            border-left-color: #10b981;
+            background: #efe;
+        }
+        pre {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 300px;
+        }
+        .step {
+            background: white;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-left: 3px solid #667eea;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Transfer Ratings Between Browsers/Modes</h1>
+
+        <div class="info-box">
+            <strong>ℹ️ Why do I need this?</strong><br>
+            Normal browsing mode and Incognito/Private mode use separate storage.
+            Ratings saved in normal mode won't appear in incognito mode (and vice versa).
+            This tool lets you export ratings from one mode and import them into another.
+        </div>
+
+        <div class="warning-box">
+            <strong>⚠️ Important:</strong><br>
+            • Normal Mode ↔️ Incognito Mode have separate data (browser security feature)<br>
+            • Different browsers (Chrome, Firefox, Safari) also have separate data<br>
+            • Use this tool to manually transfer ratings between them
+        </div>
+
+        <!-- Step 1: Export -->
+        <div class="section">
+            <h2>📤 Step 1: Export Ratings (from source browser/mode)</h2>
+            <p>Click this button in the browser/mode that <strong>HAS</strong> the ratings you want to keep:</p>
+            <button class="btn-primary" onclick="exportRatings()">📤 Export Current Ratings</button>
+            <div id="exportResult"></div>
+        </div>
+
+        <!-- Step 2: Copy -->
+        <div class="section">
+            <h2>📋 Step 2: Copy the Exported Data</h2>
+            <div class="step">
+                <strong>Instructions:</strong>
+                <ol style="margin: 10px 0; padding-left: 20px;">
+                    <li>Click "Export Current Ratings" above</li>
+                    <li>Copy the text that appears (Ctrl+C / Cmd+C)</li>
+                    <li>Open this page in the other browser/mode (incognito or different browser)</li>
+                    <li>Paste the text in the box below and click Import</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Step 3: Import -->
+        <div class="section">
+            <h2>📥 Step 3: Import Ratings (to destination browser/mode)</h2>
+            <p>Paste the exported data here and click import:</p>
+            <textarea id="importData" placeholder="Paste exported rating data here..."></textarea>
+            <div style="margin-top: 10px;">
+                <button class="btn-success" onclick="importRatings()">📥 Import Ratings</button>
+                <button class="btn-warning" onclick="mergeRatings()">🔀 Merge with Existing Ratings</button>
+            </div>
+            <div id="importResult"></div>
+        </div>
+
+        <!-- Current Status -->
+        <div class="section">
+            <h2>📊 Current Ratings Status</h2>
+            <button class="btn-primary" onclick="showCurrentStatus()">Show Current Ratings</button>
+            <div id="statusResult"></div>
+        </div>
+
+        <!-- Back to Main -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn-primary" onclick="window.location.href='index.html'">← Back to Recipes</button>
+        </div>
+    </div>
+
+    <script>
+        function exportRatings() {
+            try {
+                const globalRatings = JSON.parse(localStorage.getItem('recipeRatings') || '{}');
+                const sessionRatings = JSON.parse(sessionStorage.getItem('sessionRatings') || '{}');
+
+                const exportData = {
+                    version: '1.0',
+                    exportDate: new Date().toISOString(),
+                    globalRatings: globalRatings,
+                    sessionRatings: sessionRatings,
+                    recipeCount: Object.keys(globalRatings).length,
+                    totalReviews: Object.values(globalRatings).reduce((sum, r) => sum + (r.count || 0), 0)
+                };
+
+                const exportText = JSON.stringify(exportData, null, 2);
+
+                const html = `
+                    <div class="result success">
+                        ✅ Exported ${exportData.recipeCount} recipe(s) with ${exportData.totalReviews} total review(s)!<br><br>
+                        <strong>📋 Copy this data:</strong>
+                        <textarea readonly style="width: 100%; height: 200px; margin-top: 10px;">${exportText}</textarea>
+                        <button class="btn-primary" style="margin-top: 10px;" onclick="copyToClipboard(\`${exportText.replace(/`/g, '\\`')}\`)">📋 Copy to Clipboard</button>
+                    </div>
+                `;
+
+                document.getElementById('exportResult').innerHTML = html;
+            } catch (e) {
+                document.getElementById('exportResult').innerHTML = `
+                    <div class="result error">
+                        ❌ Error exporting: ${e.message}
+                    </div>
+                `;
+            }
+        }
+
+        function importRatings() {
+            try {
+                const input = document.getElementById('importData').value.trim();
+                if (!input) {
+                    throw new Error('Please paste the exported data first');
+                }
+
+                const importData = JSON.parse(input);
+
+                if (!importData.version || !importData.globalRatings) {
+                    throw new Error('Invalid export format');
+                }
+
+                // Replace existing ratings completely
+                localStorage.setItem('recipeRatings', JSON.stringify(importData.globalRatings));
+                sessionStorage.setItem('sessionRatings', JSON.stringify(importData.sessionRatings || {}));
+
+                const recipeCount = Object.keys(importData.globalRatings).length;
+                const totalReviews = Object.values(importData.globalRatings).reduce((sum, r) => sum + (r.count || 0), 0);
+
+                document.getElementById('importResult').innerHTML = `
+                    <div class="result success">
+                        ✅ Successfully imported ${recipeCount} recipe(s) with ${totalReviews} review(s)!<br>
+                        Export date: ${new Date(importData.exportDate).toLocaleString()}<br><br>
+                        <strong>Next step:</strong> <a href="index.html">Go to main page</a> to see the ratings!
+                    </div>
+                `;
+
+                showCurrentStatus();
+            } catch (e) {
+                document.getElementById('importResult').innerHTML = `
+                    <div class="result error">
+                        ❌ Import failed: ${e.message}<br>
+                        Please check that you pasted the complete exported data.
+                    </div>
+                `;
+            }
+        }
+
+        function mergeRatings() {
+            try {
+                const input = document.getElementById('importData').value.trim();
+                if (!input) {
+                    throw new Error('Please paste the exported data first');
+                }
+
+                const importData = JSON.parse(input);
+
+                if (!importData.version || !importData.globalRatings) {
+                    throw new Error('Invalid export format');
+                }
+
+                // Get existing ratings
+                const existingGlobal = JSON.parse(localStorage.getItem('recipeRatings') || '{}');
+                const existingSession = JSON.parse(sessionStorage.getItem('sessionRatings') || '{}');
+
+                // Merge global ratings (imported data takes precedence)
+                const mergedGlobal = { ...existingGlobal, ...importData.globalRatings };
+                const mergedSession = { ...existingSession, ...(importData.sessionRatings || {}) };
+
+                localStorage.setItem('recipeRatings', JSON.stringify(mergedGlobal));
+                sessionStorage.setItem('sessionRatings', JSON.stringify(mergedSession));
+
+                const totalRecipes = Object.keys(mergedGlobal).length;
+                const importedCount = Object.keys(importData.globalRatings).length;
+
+                document.getElementById('importResult').innerHTML = `
+                    <div class="result success">
+                        ✅ Successfully merged ratings!<br>
+                        • Imported: ${importedCount} recipe(s)<br>
+                        • Total after merge: ${totalRecipes} recipe(s)<br><br>
+                        <strong>Next step:</strong> <a href="index.html">Go to main page</a> to see the ratings!
+                    </div>
+                `;
+
+                showCurrentStatus();
+            } catch (e) {
+                document.getElementById('importResult').innerHTML = `
+                    <div class="result error">
+                        ❌ Merge failed: ${e.message}<br>
+                        Please check that you pasted the complete exported data.
+                    </div>
+                `;
+            }
+        }
+
+        function showCurrentStatus() {
+            const globalRatings = JSON.parse(localStorage.getItem('recipeRatings') || '{}');
+            const sessionRatings = JSON.parse(sessionStorage.getItem('sessionRatings') || '{}');
+
+            const recipeCount = Object.keys(globalRatings).length;
+            const totalReviews = Object.values(globalRatings).reduce((sum, r) => sum + (r.count || 0), 0);
+            const sessionCount = Object.keys(sessionRatings).length;
+
+            let html = '<div class="result">';
+            html += `<strong>Current Storage Status:</strong><br><br>`;
+            html += `📊 Recipes with ratings: ${recipeCount}<br>`;
+            html += `⭐ Total reviews: ${totalReviews}<br>`;
+            html += `🔖 Your ratings (this session): ${sessionCount}<br><br>`;
+
+            if (recipeCount > 0) {
+                html += '<strong>Global Ratings Data:</strong>';
+                html += '<pre>' + JSON.stringify(globalRatings, null, 2) + '</pre>';
+            } else {
+                html += '<em style="color: #f59e0b;">⚠️ No ratings found in this browser/mode</em>';
+            }
+
+            html += '</div>';
+
+            document.getElementById('statusResult').innerHTML = html;
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ Copied to clipboard! Now open this page in incognito mode (or other browser) and paste it in the import box.');
+            }).catch(err => {
+                alert('❌ Failed to copy. Please manually select and copy the text.');
+            });
+        }
+
+        // Detect if in incognito mode
+        function detectPrivateMode() {
+            return new Promise((resolve) => {
+                const yes = () => resolve(true);
+                const not = () => resolve(false);
+
+                function testLocalStorage() {
+                    try {
+                        if (localStorage.length) not();
+                        else {
+                            localStorage.test = 1;
+                            localStorage.removeItem('test');
+                            not();
+                        }
+                    } catch {
+                        yes();
+                    }
+                }
+
+                if (window.webkitRequestFileSystem) {
+                    window.webkitRequestFileSystem(0, 0, not, yes);
+                } else if ('MozAppearance' in document.documentElement.style) {
+                    if (indexedDB == null) yes();
+                    else {
+                        const db = indexedDB.open('test');
+                        db.onerror = yes;
+                        db.onsuccess = not;
+                    }
+                } else if (/constructor/i.test(window.HTMLElement)) {
+                    testLocalStorage();
+                } else if (window.indexedDB && /Safari/.test(navigator.userAgent)) {
+                    testLocalStorage();
+                } else {
+                    not();
+                }
+            });
+        }
+
+        // Show warning if in private mode
+        detectPrivateMode().then(isPrivate => {
+            if (isPrivate) {
+                const warning = document.createElement('div');
+                warning.className = 'warning-box';
+                warning.style.position = 'sticky';
+                warning.style.top = '20px';
+                warning.style.zIndex = '1000';
+                warning.innerHTML = `
+                    <strong>🔒 Private/Incognito Mode Detected!</strong><br>
+                    You are in private browsing mode. Ratings from normal mode won't appear here automatically.
+                    Use the export/import feature to transfer ratings from normal mode.
+                `;
+                document.querySelector('.container').insertBefore(warning, document.querySelector('.container').firstChild);
+            }
+        });
+
+        // Show current status on load
+        showCurrentStatus();
+    </script>
+</body>
+</html>

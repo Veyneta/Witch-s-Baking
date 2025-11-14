@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magical Dessert Recipe Ebook</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1>✨ Magical Dessert Recipe Ebook ✨</h1>
+                <div class="auth-buttons">
+                    <button id="loginBtn" class="auth-btn" onclick="window.location.href='login.html'">🔐 Login</button>
+                    <button id="adminBtn" class="auth-btn" onclick="window.location.href='admin.html'" style="display: none;">⚙️ Manage</button>
+                    <button id="logoutBtn" class="auth-btn" onclick="logout()" style="display: none;">🚪 Logout</button>
+                </div>
+            </div>
+            <p class="subtitle">Discover enchanting recipes filled with magic and wonder</p>
+        </header>
+
+        <!-- Search Menu -->
+        <div class="search-section">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search for magical recipes...">
+                <button id="searchBtn">🔍 Search</button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <h3>Category</h3>
+                <div class="category-buttons">
+                    <button class="category-btn active" data-category="all">All</button>
+                    <button class="category-btn" data-category="cakes">Cakes</button>
+                    <button class="category-btn" data-category="cookies">Cookies</button>
+                    <button class="category-btn" data-category="puddings">Puddings</button>
+                    <button class="category-btn" data-category="brownies">Brownies</button>
+                    <button class="category-btn" data-category="desserts">Desserts</button>
+                    <button class="category-btn" data-category="candy">Candy</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Difficulty Level</h3>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn active" data-difficulty="all">All</button>
+                    <button class="difficulty-btn" data-difficulty="1">⭐ Easy</button>
+                    <button class="difficulty-btn" data-difficulty="2">⭐⭐ Medium</button>
+                    <button class="difficulty-btn" data-difficulty="3">⭐⭐⭐ Hard</button>
+                    <button class="difficulty-btn" data-difficulty="4">⭐⭐⭐⭐ Expert</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Sort By</h3>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="default">Default</button>
+                    <button class="sort-btn" data-sort="popularity">Popularity</button>
+                    <button class="sort-btn" data-sort="category">Category</button>
+                    <button class="sort-btn" data-sort="difficulty">Difficulty</button>
+                    <button class="sort-btn" data-sort="name">Name (A-Z)</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>View</h3>
+                <div class="view-buttons">
+                    <button class="view-btn active" data-view="all" onclick="setViewFilter('all')">All Recipes</button>
+                    <button class="view-btn" data-view="favorites" onclick="setViewFilter('favorites')">⭐ Favorites</button>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h3>Tools</h3>
+                <div class="view-buttons">
+                    <button class="view-btn" onclick="window.location.href='rating-transfer.html'">📦 Transfer Ratings</button>
+                    <button class="view-btn" onclick="window.location.href='test-rating.html'">🧪 Test Ratings</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Private Mode Warning (will be shown by script if needed) -->
+        <div id="privateModeWarning" style="display: none;"></div>
+
+        <!-- Recipe Grid -->
+        <div class="recipe-grid" id="recipeGrid">
+            <!-- Recipes will be dynamically inserted here -->
+        </div>
+
+        <!-- Recipe Modal -->
+        <div class="modal" id="recipeModal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modalBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Update auth UI on page load
+        updateAuthUI();
+    </script>
+</body>
+</html>
+

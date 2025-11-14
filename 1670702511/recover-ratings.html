@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Lost Ratings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-top: 0;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+        button {
+            padding: 12px 24px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        .error {
+            border-left-color: #ef4444;
+            background: #fee;
+        }
+        .success {
+            border-left-color: #10b981;
+            background: #efe;
+        }
+        pre {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Recover Lost Ratings</h1>
+
+        <div class="section">
+            <h2>Current Data</h2>
+            <button class="btn-primary" onclick="showCurrentData()">Show Current Data</button>
+            <div id="currentData"></div>
+        </div>
+
+        <div class="section">
+            <h2>Manual Recovery</h2>
+            <p>ถ้าคุณจำคะแนนเดิมได้ ให้ใส่ข้อมูลในรูปแบบนี้:</p>
+            <textarea id="manualData" placeholder='ตัวอย่าง:
+{
+  "1": {"totalScore": 9, "count": 2},
+  "2": {"totalScore": 4, "count": 1},
+  "3": {"totalScore": 7, "count": 2}
+}'></textarea>
+            <button class="btn-success" onclick="recoverManual()">Recover from Manual Input</button>
+            <div id="manualResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>Quick Fix</h2>
+            <p>เพิ่มคะแนนตัวอย่างให้กับทุกสูตร (สำหรับทดสอบ):</p>
+            <button class="btn-primary" onclick="addSampleRatings()">Add Sample Ratings</button>
+            <div id="sampleResult"></div>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Danger Zone</h2>
+            <button class="btn-danger" onclick="clearAll()">Clear All Data</button>
+        </div>
+    </div>
+
+    <script>
+        function showCurrentData() {
+            const globalRatings = JSON.parse(localStorage.getItem('recipeRatings') || '{}');
+            const sessionRatings = JSON.parse(sessionStorage.getItem('sessionRatings') || '{}');
+
+            let html = '<div class="result">';
+            html += '<h3>localStorage (recipeRatings):</h3>';
+            html += '<pre>' + JSON.stringify(globalRatings, null, 2) + '</pre>';
+            html += '<h3>sessionStorage (sessionRatings):</h3>';
+            html += '<pre>' + JSON.stringify(sessionRatings, null, 2) + '</pre>';
+            html += '</div>';
+
+            document.getElementById('currentData').innerHTML = html;
+        }
+
+        function recoverManual() {
+            try {
+                const input = document.getElementById('manualData').value;
+                const data = JSON.parse(input);
+
+                const globalRatings = JSON.parse(localStorage.getItem('recipeRatings') || '{}');
+
+                Object.keys(data).forEach(recipeId => {
+                    const item = data[recipeId];
+                    globalRatings[recipeId] = {
+                        totalScore: item.totalScore || 0,
+                        count: item.count || 1,
+                        sessions: item.sessions || {}
+                    };
+                });
+
+                localStorage.setItem('recipeRatings', JSON.stringify(globalRatings));
+
+                document.getElementById('manualResult').innerHTML = `
+                    <div class="result success">
+                        ✅ Recovered ${Object.keys(data).length} recipes!<br>
+                        <strong>Next:</strong> Refresh index.html
+                    </div>
+                `;
+
+                showCurrentData();
+            } catch (e) {
+                document.getElementById('manualResult').innerHTML = `
+                    <div class="result error">
+                        ❌ Error: ${e.message}<br>
+                        Please check your JSON format.
+                    </div>
+                `;
+            }
+        }
+
+        function addSampleRatings() {
+            const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+            const sampleData = {
+                "1": { totalScore: 9, count: 2, sessions: { [sessionId]: 5, "session_old": 4 } },
+                "2": { totalScore: 4, count: 1, sessions: { [sessionId]: 4 } },
+                "3": { totalScore: 7, count: 2, sessions: { [sessionId]: 4, "session_old": 3 } },
+                "4": { totalScore: 0, count: 0, sessions: {} },
+                "5": { totalScore: 0, count: 0, sessions: {} },
+                "6": { totalScore: 5, count: 1, sessions: { [sessionId]: 5 } }
+            };
+
+            localStorage.setItem('recipeRatings', JSON.stringify(sampleData));
+
+            // Also set session data
+            const sessionData = {
+                "1": 5,
+                "2": 4,
+                "3": 4,
+                "6": 5
+            };
+            sessionStorage.setItem('sessionRatings', JSON.stringify(sessionData));
+
+            document.getElementById('sampleResult').innerHTML = `
+                <div class="result success">
+                    ✅ Added sample ratings!<br>
+                    - Recipe 1: 4.5 stars (2 reviews)<br>
+                    - Recipe 2: 4.0 stars (1 review)<br>
+                    - Recipe 3: 3.5 stars (2 reviews)<br>
+                    - Recipe 6: 5.0 stars (1 review)<br>
+                    <br>
+                    <strong>Next:</strong> Refresh index.html
+                </div>
+            `;
+
+            showCurrentData();
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure? This will delete ALL ratings!')) {
+                localStorage.removeItem('recipeRatings');
+                sessionStorage.removeItem('sessionRatings');
+                alert('All data cleared! Refresh index.html');
+                showCurrentData();
+            }
+        }
+
+        // Show current data on load
+        showCurrentData();
+    </script>
+</body>
+</html>

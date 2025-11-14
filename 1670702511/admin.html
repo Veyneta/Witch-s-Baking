@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Content Management - Magical Dessert Recipe Ebook</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1>⚙️ Content Management</h1>
+                <div class="auth-buttons">
+                    <button class="auth-btn" onclick="window.location.href='index.html'">📖 View Recipes</button>
+                    <button class="auth-btn" onclick="logout()">🚪 Logout</button>
+                </div>
+            </div>
+            <p class="subtitle">Manage your magical recipes</p>
+        </header>
+
+        <div class="admin-controls">
+            <button class="add-recipe-btn" onclick="showAddRecipeForm()">➕ Add New Recipe</button>
+        </div>
+
+        <div class="admin-recipes-list" id="adminRecipesList">
+            <!-- Recipes will be displayed here -->
+        </div>
+
+        <!-- Add/Edit Recipe Modal -->
+        <div class="modal" id="recipeFormModal">
+            <div class="modal-content large-modal">
+                <span class="close" onclick="closeRecipeForm()">&times;</span>
+                <div id="recipeFormBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="script.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
+

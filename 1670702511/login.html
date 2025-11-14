@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Magical Dessert Recipe Ebook</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="login-box">
+                <h1>🔐 Login</h1>
+                <p class="login-subtitle">Access the Content Management System</p>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required placeholder="Enter your username">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter your password">
+                    </div>
+                    
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
+                    
+                    <button type="submit" class="login-submit-btn">✨ Login</button>
+                </form>
+                
+                <div class="login-info">
+                    <p><strong>Demo Credentials:</strong></p>
+                    <p>Username: <code>admin</code></p>
+                    <p>Password: <code>magic123</code></p>
+                </div>
+                
+                <div class="back-link">
+                    <a href="index.html">← Back to Recipe Book</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (login(username, password)) {
+                window.location.href = 'admin.html';
+            } else {
+                const errorMsg = document.getElementById('errorMessage');
+                errorMsg.textContent = 'Invalid username or password!';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
+
